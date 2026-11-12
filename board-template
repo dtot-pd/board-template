@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Call Board Creation Flows</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg0:#121212;--bg1:#1b1b1b;--bg2:#242424;--l1:rgba(255,255,255,.1);--l2:rgba(255,255,255,.2);--t5:rgba(255,255,255,.5);--t8:rgba(255,255,255,.8);--brand:#0074f4;--ok:#2bb673;--warn:#ff9900}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;font-family:Roboto,-apple-system,Helvetica,Arial,sans-serif;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;-webkit-font-smoothing:antialiased}
+#top{width:100%;max-width:1240px;display:flex;gap:8px;align-items:center;padding:16px 20px 12px}
+#top h1{font-size:15px;font-weight:500;margin-right:auto;color:var(--t8)}
+.tab{background:transparent;border:1px solid var(--l2);color:var(--t8);border-radius:999px;padding:7px 16px;font:500 13px Roboto,sans-serif;cursor:pointer}
+.tab.on{background:#fff;color:#111;border-color:#fff}
+#frame{position:relative}
+#scaler{position:absolute;left:0;top:0;width:1200px;height:780px;transform-origin:0 0}
+#stage{position:absolute;inset:0;background:var(--bg0);overflow:hidden;border-radius:10px;font-size:14px}
+#cap{width:100%;text-align:center;padding:14px 20px;font-size:15px;color:var(--t8);height:56px}
+#cap b{color:#fff;font-weight:500}
+#bar{width:100%;max-width:1240px;display:flex;gap:12px;align-items:center;padding:4px 20px 20px}
+#bar button{background:var(--bg2);border:1px solid var(--l1);color:#fff;border-radius:8px;height:36px;padding:0 14px;font:500 13px Roboto,sans-serif;cursor:pointer}
+#seek{flex:1;accent-color:var(--brand)}
+#tm{font-size:12px;color:var(--t5);width:84px;text-align:right;font-variant-numeric:tabular-nums}
+body.render{background:#000;display:block}
+body.render #top,body.render #bar{display:none}
+body.render #cap{background:#000}
+/* stage */
+.side{position:absolute;left:0;top:0;bottom:0;width:280px;padding:32px 28px}
+.logo{font-weight:700;font-size:22px;letter-spacing:.02em;display:flex;align-items:center;gap:10px;margin-bottom:56px}
+.logo i{width:28px;height:28px;border-radius:8px;background:var(--brand);display:grid;place-items:center;font-style:normal;font-size:16px}
+.step{display:flex;gap:12px;align-items:center;height:44px;color:var(--t5);font-size:15px;position:relative}
+.step .dot{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--l2);display:grid;place-items:center;flex:none;background:var(--bg0);position:relative;z-index:1}
+.step:not(:last-child)::after{content:"";position:absolute;left:10.5px;top:33px;width:1.5px;height:26px;background:var(--l1)}
+.step.on{color:#fff;font-weight:500}.step.on .dot{border-color:var(--brand);background:var(--brand)}
+.step.on .dot::after{content:"";width:7px;height:7px;border-radius:50%;background:#fff}
+.step.done{color:var(--t8)}.step.done .dot{background:var(--brand);border-color:var(--brand)}
+.panel{position:absolute;left:280px;right:16px;top:16px;bottom:16px;background:var(--bg1);border-radius:12px;display:flex;flex-direction:column}
+.x{position:absolute;right:20px;top:20px;color:var(--t5)}
+.body{flex:1;padding:44px 40px 0;position:relative;overflow:visible}
+h1.t{font-size:28px;font-weight:500;letter-spacing:-.01em}
+p.s{font-size:15px;color:var(--t5);margin-top:8px}
+.foot{height:76px;border-top:1px solid var(--l1);display:flex;align-items:center;padding:0 28px;gap:12px}
+.foot .sp{flex:1}
+.lnk{color:var(--brand);font-weight:500;font-size:14px}
+.btn{height:36px;border-radius:999px;padding:0 22px;display:inline-flex;align-items:center;gap:8px;font-weight:500;font-size:14px;background:var(--brand);color:#fff}
+.btn.dis{opacity:.35}.btn.hov{filter:brightness(1.18)}
+.btn.ghost{background:transparent;color:var(--t8);padding:0 12px}
+.btn.out{background:transparent;border:1px solid var(--l2);color:#fff;border-radius:8px;height:40px}
+.btn.out.hov{background:rgba(255,255,255,.07)}
+.grid{display:grid;grid-template-columns:repeat(3,264px);gap:16px;margin-top:32px}
+.tc{height:216px;border:1px solid var(--l1);border-radius:12px;padding:20px;background:var(--bg2);position:relative;transition:none}
+.tc.hov{border-color:var(--l2);background:#2b2b2b}.tc.sel{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset;background:#1c2a3d}
+.tc .ico{width:40px;height:40px;border-radius:10px;background:rgba(0,116,244,.16);color:#58a6ff;display:grid;place-items:center;margin-bottom:16px}
+.tc h3{font-size:17px;font-weight:500}.tc p{font-size:13.5px;color:var(--t5);margin-top:4px;line-height:1.4}
+.chips{position:absolute;left:20px;right:20px;bottom:20px;display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11.5px;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--t8)}
+.tc.blank{border-style:dashed;background:transparent}.tc.blank .ico{background:rgba(255,255,255,.08);color:var(--t8)}
+.tc .chk{position:absolute;right:16px;top:16px;width:22px;height:22px;border-radius:50%;background:var(--brand);display:grid;place-items:center}
+.opts{display:flex;gap:16px;margin-top:32px}
+.opt{width:404px;height:96px;border:1px solid var(--l1);background:var(--bg2);border-radius:12px;padding:20px;display:flex;gap:16px;align-items:center}
+.opt.hov{border-color:var(--l2)}.opt.sel{border-color:var(--brand);background:#1c2a3d}
+.opt .ico{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,.08);display:grid;place-items:center;flex:none}
+.opt h3{font-size:16px;font-weight:500}.opt p{font-size:13px;color:var(--t5);margin-top:3px}
+.drop{margin-top:24px;width:824px;height:148px;border:1.5px dashed var(--l2);border-radius:12px;display:grid;place-items:center;text-align:center;color:var(--t5);font-size:14px}
+.drop.hov{border-color:var(--brand);background:rgba(0,116,244,.06);color:#fff}
+.file{margin-top:24px;width:824px;border:1px solid var(--l1);background:var(--bg2);border-radius:12px;padding:18px 20px;display:flex;gap:16px;align-items:center}
+.file .fi{width:40px;height:48px;border-radius:6px;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--t8)}
+.bar{height:6px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--brand)}
+.lbl{font-size:13px;color:var(--t8);margin-bottom:8px;font-weight:500}
+.field{height:48px;border:1px solid var(--l2);border-radius:4px;background:var(--bg0);padding:0 14px;display:flex;align-items:center;font-size:15px;position:relative}
+.field.foc{border-color:var(--brand)}.field.ph{color:var(--t5)}.field.hov{border-color:rgba(255,255,255,.4)}
+.field .cv{margin-left:auto;color:var(--t5)}
+.caret{display:inline-block;vertical-align:middle;width:1.5px;height:19px;background:#fff;margin-left:1px}
+.menu{position:absolute;left:-1px;right:-1px;top:calc(100% + 4px);background:#2c2c2c;border:1px solid var(--l2);border-radius:8px;padding:6px;z-index:20;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+.mi{height:38px;border-radius:5px;display:flex;align-items:center;padding:0 12px;font-size:14px;color:var(--t8)}.mi.hov{background:rgba(255,255,255,.1);color:#fff}
+.ok{color:var(--ok);display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500}
+.srow{display:flex;gap:12px;align-items:center;height:56px;border:1px solid var(--l1);background:var(--bg2);border-radius:10px;padding:0 16px;width:560px;margin-top:10px}
+.srow .d{width:12px;height:12px;border-radius:50%}.srow .gr{color:var(--t5);letter-spacing:-2px}
+.arow{width:824px;border:1px solid var(--l1);background:var(--bg2);border-radius:12px;padding:16px 20px;margin-top:12px;display:flex;align-items:center;gap:14px;position:relative}
+.arow .w{font-size:13px;color:var(--t5);font-weight:500;width:38px}
+.arow .field{flex:1;height:44px;background:var(--bg1)}
+.empty{margin-top:32px;width:824px;height:140px;border:1.5px dashed var(--l1);border-radius:12px;display:grid;place-items:center;color:var(--t5);text-align:center}
+.sum{margin-top:28px;width:560px;border:1px solid var(--l1);border-radius:12px;background:var(--bg2)}
+.sum div{display:flex;justify-content:space-between;padding:14px 20px;font-size:14px;border-bottom:1px solid var(--l1)}.sum div:last-child{border:0}.sum span{color:var(--t5)}
+/* board */
+.rail{position:absolute;left:0;top:0;bottom:0;width:64px;border-right:1px solid var(--l1);display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:20px}
+.rail .ri{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;color:var(--t5)}.rail .ri.on{background:rgba(0,116,244,.18);color:#58a6ff}
+.bh{position:absolute;left:88px;right:24px;top:24px;display:flex;align-items:center;gap:14px}
+.bh h2{font-size:24px;font-weight:500}.pill{font-size:12.5px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--t8);display:inline-flex;gap:6px;align-items:center}
+.pill.g{background:rgba(0,116,244,.16);color:#58a6ff}
+.cols{position:absolute;left:88px;right:24px;top:92px;bottom:24px;display:flex;gap:16px}
+.col{flex:1;background:var(--bg1);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--l1)}
+.ch{height:52px;display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--l1);font-weight:500;font-size:14.5px}
+.ch .d{width:10px;height:10px;border-radius:50%}.ch .n{margin-left:auto;color:var(--t8);font-variant-numeric:tabular-nums;font-size:13px}
+.cb{flex:1;position:relative;overflow:hidden;margin:12px}
+.cc{position:absolute;left:0;right:0;height:64px;border-radius:10px;background:var(--bg2);border:1px solid var(--l1);display:flex;gap:12px;align-items:center;padding:0 12px}
+.av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:500;flex:none}
+.cc b{font-size:13.5px;font-weight:500;display:block}.cc span{font-size:12px;color:var(--t5)}
+.mt{position:absolute;color:var(--t5);font-size:13px;left:0;right:0;top:50px;text-align:center}
+.toast{position:absolute;right:40px;bottom:40px;width:340px;background:#2c2c2c;border:1px solid var(--l2);border-radius:12px;padding:16px 18px;box-shadow:0 12px 32px rgba(0,0,0,.5);z-index:30}
+#cur{position:absolute;left:0;top:0;width:28px;height:28px;z-index:100;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6))}
+#ring{position:absolute;width:40px;height:40px;border-radius:50%;border:2px solid #fff;z-index:99;pointer-events:none;opacity:0}
+</style>
+</head>
+<body>
+<div id="top"><h1>Call Board creation flows</h1>
+<button class="tab on" data-f="A">1 · Pre-built template</button>
+<button class="tab" data-f="B">2 · Custom build</button></div>
+<div id="frame"><div id="scaler"><div id="stage"></div><svg id="cur" viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L9.5 19z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg><div id="ring"></div></div></div>
+<div id="cap"></div>
+<div id="bar"><button id="pp">Pause</button><button id="rs">Restart</button><input id="seek" type="range" min="0" max="1000" value="0"><span id="tm"></span></div>
+<script>
+const P={zap:'<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',cal:'<path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>',rep:'<path d="M17 2l4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3"/>',plus:'<path d="M12 5v14M5 12h14"/>',up:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',chk:'<path d="M20 6 9 17l-5-5"/>',x:'<path d="M18 6 6 18M6 6l12 12"/>',dn:'<path d="m6 9 6 6 6-6"/>',users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',lay:'<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>',ph:'<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>',ar:'<path d="M5 12h14M12 5l7 7-7 7"/>',msg:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',rpt:'<path d="M18 20V10M12 20V4M6 20v-6"/>'};
+const ic=(n,s=20,c)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c||'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${P[n]}</svg>`;
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), ease=x=>1-Math.pow(1-clamp(x),3), inout=x=>{x=clamp(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2};
+const NAMES=['Maya Brooks','Daniel Ortiz','Priya Shah','Tom Whitfield','Aisha Khan','Lucas Meyer','Sofia Rossi','Ethan Park','Grace Liu','Marcus Reed','Hannah Cole','Omar Haddad','Chloe Bennett','Noah Fischer','Isla Grant','Victor Alvarez','Zoe Turner','Ben Kowalski','Lena Voss','Raj Patel','Nora Webb','Jack Ellis','Mia Duarte','Leo Hansen'];
+const ini=n=>n.split(' ').map(w=>w[0]).join(''), PH=i=>`(${214+(i*7)%80}) 555-${String(1042+(i*397)%8900).padStart(4,'0')}`;
+const TPL={speed:{n:'Speed to Lead',d:'Call new leads within minutes of them coming in.',i:'zap',c:['New Lead','Attempting','Connected']},nurt:{n:'Lead Nurture',d:'Keep warm leads moving with steady follow-up.',i:'msg',c:['New Lead','Nurturing','Qualified']},appt:{n:'Appointment Setting',d:'Turn conversations into booked meetings.',i:'cal',c:['Connected','Booked','Showed']},react:{n:'Old Lead Reactivation',d:'Wake up contacts that went quiet.',i:'rep',c:['Cold','Re-engaged','Booked']},custom:{n:'Custom Board',d:'Start from scratch.',i:'plus',c:[]}};
+const COLORS=['#0074f4','#ff9900','#2bb673','#a45cff','#ff6068'];
+const STAGES=['New Lead','Attempting','Connected','Appointment Set'];
+
+/* ---------- scripts ---------- */
+function mk(){const E=[],M=[],C=[];const at=(t,fn,d=0)=>E.push({t,d,fn});
+ const go=(t,screen)=>at(t,S=>{S.screen=screen;S.screenT=t});
+ const click=(t,target,fn)=>{M.push({t0:t-.85,t1:t,target});at(t,S=>{S.clickT=t;fn&&fn(S)})};
+ const type=(t,d,key,text)=>at(t,(S,p)=>{S.f[key]=text.slice(0,Math.round(p*text.length))},d);
+ const cap=(t,h,s)=>C.push({t,h,s});
+ return {E,M,C,at,go,click,type,cap}}
+function scriptA(){const s=mk(),{at,go,click,type,cap}=s;
+ cap(0,'1 · Choose a template','Start from a pre-built pipeline');
+ go(0,'tmpl');
+ click(2.0,'speed',S=>S.tmpl='speed');
+ cap(3.4,'2 · Add contacts','Bring in a CSV or match from your CRM');
+ click(3.4,'next',S=>{});go(3.45,'contacts');
+ click(5.2,'csv',S=>S.method='csv');
+ click(6.6,'drop',S=>{});at(6.6,(S,p)=>S.up=p,1.4);
+ click(9.2,'next',S=>{});
+ cap(9.2,'3 · Name your board','Review and create');
+ go(9.25,'details');
+ click(10.5,'name',S=>S.focus='name');type(10.7,1.3,'name','Speed to Lead');
+ click(13.2,'next',S=>{});go(13.25,'board');
+ cap(13.3,'4 · Contacts load in','1,248 contacts land in New Lead, ready to dial');
+ at(14.2,(S,p)=>S.load=p,5.5);
+ s.dur=23;return s}
+function scriptB(){const s=mk(),{at,go,click,type,cap}=s;
+ cap(0,'1 · Choose a template','Start with a blank, custom board');
+ go(0,'tmpl');
+ click(2.0,'custom',S=>S.tmpl='custom');
+ cap(3.4,'2 · Set your stages','The columns contacts move through');
+ click(3.4,'next',S=>{});go(3.45,'stages');
+ const sn=['New Lead','Attempting','Connected','Appointment Set'];
+ sn.forEach((n,i)=>{const t=4.6+i*2.1;click(t,'addstage',S=>{});at(t,(S,p)=>{S.nst=Math.max(S.nst||0,i+1);S.foc=i},0);type(t+.5,.9,'st'+i,n)});
+ click(13.2,'next',S=>{});
+ cap(13.2,'3 · Add automations','Move contacts automatically when something happens');
+ go(13.25,'autos');
+ click(14.8,'addauto',S=>S.nau=1);
+ click(16.0,'t0',S=>S.dd='t0');click(17.0,'o_t0',S=>{S.dd=null;S.t0=0});
+ click(18.0,'a0',S=>S.dd='a0');click(19.0,'o_a0',S=>{S.dd=null;S.a0=0});
+ click(20.4,'addauto',S=>S.nau=2);
+ click(21.5,'t1',S=>S.dd='t1');click(22.4,'o_t1',S=>{S.dd=null;S.t1=1});
+ click(23.4,'a1',S=>S.dd='a1');click(24.3,'o_a1',S=>{S.dd=null;S.a1=1});
+ click(25.8,'next',S=>{});
+ cap(25.8,'4 · Add contacts','Match a list from your CRM');
+ go(25.85,'contacts');
+ click(27.2,'crm',S=>S.method='crm');
+ click(28.5,'list',S=>S.dd='list');click(29.5,'o_list',S=>{S.dd=null;S.list=1});
+ click(31.6,'next',S=>{});
+ cap(31.6,'5 · Name your board','Review and create');
+ go(31.65,'details');
+ click(32.8,'name',S=>S.focus='name');type(33.0,1.5,'name','Inbound Follow-up');
+ click(35.5,'next',S=>{});go(35.55,'board');
+ cap(35.6,'6 · Contacts load in','842 contacts land in New Lead, with your 2 automations running');
+ at(36.5,(S,p)=>S.load=p,5);
+ s.dur=45.5;return s}
+const SCRIPTS={A:scriptA(),B:scriptB()};
+
+/* ---------- state + views ---------- */
+let flow='A',script=SCRIPTS.A,T=0;
+const newS=t=>({t,f:{},screen:'tmpl',tmpl:null,screenT:-9,clickT:-9,load:0,up:0,nst:0,nau:0,dd:null,focus:null,foc:null});
+function stepsOf(S){return S.tmpl==='custom'?[['tmpl','Template'],['stages','Stages'],['autos','Automations'],['contacts','Contacts'],['details','Details']]:[['tmpl','Template'],['contacts','Contacts'],['details','Details']]}
+function shell(S,body,opts){const st=stepsOf(S),ci=Math.max(0,st.findIndex(x=>x[0]===S.screen));
+ const k=ease((S.t-S.screenT)/.4);
+ const stepper=st.map((x,i)=>`<div class="step ${i<ci?'done':i===ci?'on':''}"><div class="dot">${i<ci?ic('chk',13,'#fff'):''}</div>${x[1]}</div>`).join('');
+ const h=id=>S.hover===id?'hov':'';
+ return `<div class="side"><div class="logo"><i>W</i>WAVV</div>${stepper}</div>
+ <div class="panel"><div class="x">${ic('x',20)}</div><div class="body" style="opacity:${k};transform:translateY(${(1-k)*10}px)">${body}</div>
+ <div class="foot">${opts.link?`<span class="lnk">Have a template code?</span>`:ci>0?`<span class="btn ghost">Back</span>`:''}<span class="sp"></span><span data-t="next" class="btn ${opts.dis?'dis':''} ${h('next')}">${opts.cta||'Continue'} ${opts.cta?'':ic('ar',16)}</span></div></div>`}
+const hd=(t,s)=>`<h1 class="t">${t}</h1><p class="s">${s}</p>`;
+function vTmpl(S){const h=id=>S.hover===id&&S.tmpl!==id?'hov':'';
+ const cards=Object.keys(TPL).map(k=>{const d=TPL[k],sel=S.tmpl===k;return `<div data-t="${k}" class="tc ${sel?'sel':''} ${k==='custom'?'blank':''} ${h(k)}">${sel?`<div class="chk">${ic('chk',13,'#fff')}</div>`:''}<div class="ico">${ic(d.i,22)}</div><h3>${d.n}</h3><p>${d.d}</p><div class="chips">${d.c.map(c=>`<span class="chip">${c}</span>`).join('')}</div></div>`}).join('');
+ return shell(S,hd('Choose a template','Start with a proven pipeline, or build your own. You can change everything later.')+`<div class="grid">${cards}</div>`,{link:1,dis:!S.tmpl})}
+function vStages(S){const rows=[];for(let i=0;i<S.nst;i++){const v=S.f['st'+i]||'',foc=S.foc===i&&S.t-(S.stT||0)>=0;
+ rows.push(`<div class="srow"><span class="gr">⋮⋮</span><span class="d" style="background:${COLORS[i]}"></span><span style="font-size:15px;flex:1">${v}${S.foc===i&&((S.t*2)%2<1.2)?'<span class="caret"></span>':''}${!v&&S.foc!==i?'<span style="color:var(--t5)">Stage name</span>':''}</span><span style="color:var(--t5)">${ic('x',16)}</span></div>`)}
+ const h=S.hover==='addstage'?'hov':'';
+ return shell(S,hd('Set your stages','Stages are the columns your contacts move through on the board.')+`<div style="margin-top:24px;min-height:${4*66+10}px">${rows.join('')||`<div class="empty" style="width:560px;height:120px">No stages yet</div>`}</div><div data-t="addstage" class="btn out ${h}" style="margin-top:6px">${ic('plus',16)} Add stage</div>`,{dis:S.nst<4||!S.f.st3||S.f.st3.length<15})}
+const TRG=['Call ends in No Answer','Marked Interested','Meeting booked'],ACT=['Move to Attempting','Move to Connected','Move to Appointment Set'];
+function sel(S,id,vals,idx,ph){const open=S.dd===id,h=S.hover===id?'hov':'';
+ return `<div data-t="${id}" class="field ${idx==null?'ph':''} ${open?'foc':''} ${h}">${idx==null?ph:vals[idx]}<span class="cv">${ic('dn',16)}</span>${open?`<div class="menu">${vals.map((v,i)=>`<div data-t="o_${id}" class="mi">${v}</div>`).join('')}</div>`:''}</div>`}
+function vAutos(S){const rows=[];for(let i=0;i<S.nau;i++){const k=ease((S.t-(S.auT?S.auT[i]:0))/.3);
+  const d0=S.dd===('t'+i)||S.dd===('a'+i);
+  rows.push(`<div class="arow" style="z-index:${10-i}"><span class="w">When</span>${sel(S,'t'+i,TRG,S['t'+i],'Choose a trigger')}<span class="w" style="width:auto">then</span>${sel(S,'a'+i,ACT,S['a'+i],'Choose an action')}<span style="color:var(--t5)">${ic('x',16)}</span></div>`)}
+ const h=S.hover==='addauto'?'hov':'';
+ return shell(S,hd('Add automations','Automations move contacts between stages so reps never have to.')+`${S.nau?rows.join(''):`<div class="empty"><div>${ic('zap',24)}<div style="margin-top:8px">No automations yet</div></div></div>`}<div data-t="addauto" class="btn out ${h}" style="margin-top:16px">${ic('plus',16)} Add automation</div>`,{dis:!(S.nau>=2&&S.a1!=null)})}
+function vContacts(S){const m=S.method,h=id=>S.hover===id&&m!==id?'hov':'';
+ const o=(id,i,t,d)=>`<div data-t="${id}" class="opt ${m===id?'sel':''} ${h(id)}"><div class="ico">${ic(i,22)}</div><div><h3>${t}</h3><p>${d}</p></div></div>`;
+ let sub='',ready=false;const dest=`<div style="margin-top:24px;width:400px"><div class="lbl">Add contacts to</div><div class="field">New Lead<span class="cv">${ic('dn',16)}</span></div></div>`;
+ if(m==='csv'){ if(S.up<=0)sub=`<div data-t="drop" class="drop ${S.hover==='drop'?'hov':''}"><div>${ic('up',26)}<div style="margin-top:8px">Click to choose a file, or drag it here</div></div></div>`;
+  else{const done=S.up>=1;ready=done;sub=`<div class="file"><div class="fi">CSV</div><div style="flex:1"><div style="font-weight:500">spring-leads.csv</div>${done?`<div class="ok" style="margin-top:6px">${ic('chk',16)}1,248 contacts found</div>`:`<div class="bar"><i style="width:${S.up*100}%"></i></div>`}</div></div>`+(done?dest:'')}}
+ if(m==='crm'){const LS=['Cold Leads · 3,120 contacts','Hot Leads · 842 contacts','Webinar Signups · 415 contacts'];ready=S.list!=null;
+  sub=`<div style="margin-top:24px;width:560px;position:relative;z-index:5"><div class="lbl">Choose a list from your CRM</div>${sel(S,'list',LS,S.list,'Select a list')}</div>`+(ready?`<div class="ok" style="margin-top:16px">${ic('chk',16)}842 contacts found</div>${dest}`:'')}
+ return shell(S,hd('Add your contacts','Bring in contacts now, or skip and add them later.')+`<div class="opts">${o('csv','up','Upload a CSV','Import a spreadsheet of contacts')}${o('crm','users','Match from your CRM','Pull a list or segment from your CRM')}</div>${sub}`,{dis:!ready})}
+function vDetails(S){const v=S.f.name||'',foc=S.focus==='name',B=flow==='B';
+ const rows=B?[['Template','Custom Board'],['Stages','4'],['Automations','2'],['Contacts','842 from your CRM']]:[['Template','Speed to Lead'],['Stages','3 · 3 automations included'],['Contacts','1,248 from spring-leads.csv']];
+ const ok=v.length>=(B?17:13);
+ return shell(S,hd('Name your call board','Last step. Review what you set up.')+`<div style="margin-top:32px;width:560px"><div class="lbl">Board name</div><div data-t="name" class="field ${foc?'foc':''} ${S.hover==='name'?'hov':''}">${v}${foc&&((S.t*2)%2<1.2)?'<span class="caret"></span>':''}${!v&&!foc?'<span style="color:var(--t5)">e.g. Inbound Follow-up</span>':''}</div></div><div class="sum">${rows.map(r=>`<div><span>${r[0]}</span>${r[1]}</div>`).join('')}</div>`,{cta:'Create Call Board',dis:!ok})}
+function vBoard(S){const B=flow==='B',total=B?842:1248,N=36,L=S.load,k=L>=1?N-1:L*N,m=Math.floor(k),f=L>=1?1:k-m,e=ease(f);
+ const cnt=Math.round(inout(L)*total);
+ const cards=[];if(L>0){for(let j=0;j<=Math.min(m,8);j++){const i=m-j,nm=NAMES[i%NAMES.length],y=(j-(1-e))*72,op=j===0?e:1;const hue=(i*47)%360;
+   cards.push(`<div class="cc" style="top:${y}px;opacity:${op}"><div class="av" style="background:hsl(${hue} 40% 30%);color:hsl(${hue} 80% 80%)">${ini(nm)}</div><div><b>${nm}</b><span>${PH(i)}</span></div></div>`)}}
+ const cols=STAGES.map((n,i)=>`<div class="col"><div class="ch"><span class="d" style="background:${COLORS[i]}"></span>${n}<span class="n">${i===0?cnt.toLocaleString():0}</span></div><div class="cb">${i===0?cards.join(''):''}${i>0?`<div class="mt">No contacts</div>`:''}</div></div>`).join('');
+ const nm=S.f.name||(B?'Inbound Follow-up':'Speed to Lead'),k2=ease((S.t-S.screenT)/.4);
+ const done=L>=1;
+ return `<div class="rail"><div class="logo" style="margin:0 0 12px"><i style="width:34px;height:34px">W</i></div><div class="ri on">${ic('lay',20)}</div><div class="ri">${ic('ph',20)}</div><div class="ri">${ic('users',20)}</div><div class="ri">${ic('rpt',20)}</div></div>
+ <div style="opacity:${k2}"><div class="bh"><h2>${nm}</h2><span class="pill g">${ic('zap',13)} ${B?'2 automations on':'3 automations on'}</span><span class="pill">${total.toLocaleString()} contacts</span></div><div class="cols">${cols}</div></div>
+ ${L>0?`<div class="toast">${done?`<div class="ok">${ic('chk',18)} ${total.toLocaleString()} contacts added to New Lead</div>`:`<div style="font-weight:500">Importing contacts…</div><div style="font-size:12.5px;color:var(--t5);margin-top:3px">${cnt.toLocaleString()} of ${total.toLocaleString()}</div><div class="bar"><i style="width:${L*100}%"></i></div>`}</div>`:''}`}
+const VIEWS={tmpl:vTmpl,stages:vStages,autos:vAutos,contacts:vContacts,details:vDetails,board:vBoard};
+
+/* ---------- engine ---------- */
+const stage=document.getElementById('stage'),scaler=document.getElementById('scaler'),cur=document.getElementById('cur'),ring=document.getElementById('ring'),capEl=document.getElementById('cap');
+function stateAt(t){const S=newS(t);S.auT=[0,0];const ev=script.E.filter(e=>e.t<=t).sort((a,b)=>a.t-b.t);
+ for(const e of ev)e.fn(S,e.d?clamp((t-e.t)/e.d):1);
+ // hover + focus for stages
+ const M=script.M;let last=null;for(const m of M)if(m.t0<=t)last=m;
+ S.hover=null;if(last&&t>=last.t1-.3&&t<last.t1+.6)S.hover=last.target;
+ if(S.dd&&last&&S.dd){} 
+ // menu option hover follows cursor target
+ return S}
+function view(S){return VIEWS[S.screen](S)}
+let pos=[];
+function measure(){pos=[];scaler.style.transform='none';const sr=stage.getBoundingClientRect();let prev={x:640,y:520};
+ for(const m of script.M){const S=stateAt(m.t1-.001);S.hover=null;stage.innerHTML=view(S);
+  let el=stage.querySelector(`[data-t="${m.target}"]`);if(!el){console.warn('missing',m.target);pos.push(prev);continue}
+  if(m.target.startsWith('o_')){const all=[...stage.querySelectorAll(`[data-t="${m.target}"]`)];el=all[optIdx(m.target)]||all[0]}
+  const r=el.getBoundingClientRect();prev={x:r.left-sr.left+r.width/2,y:r.top-sr.top+r.height/2};
+  if(m.target==='drop')prev.y-=6;pos.push(prev)}
+ }
+function optIdx(id){const map={o_t0:0,o_a0:0,o_t1:1,o_a1:1,o_list:1};return map['o_'+id.replace(/^o_/,'')]??0}
+function cursorAt(t){const M=script.M;let i=-1;for(let k=0;k<M.length;k++)if(M[k].t0<=t)i=k;
+ const start={x:700,y:560};if(i<0)return start;const from=i===0?start:pos[i-1],to=pos[i],p=inout((t-M[i].t0)/(M[i].t1-M[i].t0));return{x:from.x+(to.x-from.x)*p,y:from.y+(to.y-from.y)*p}}
+function renderAt(t){T=clamp(t,0,script.dur);const S=stateAt(T);
+ // option hover highlight: make hovered option actually highlighted
+ stage.innerHTML=view(S);
+ if(S.hover&&S.hover.startsWith('o_')){const all=[...stage.querySelectorAll(`[data-t="${S.hover}"]`)];const el=all[optIdx(S.hover)];el&&el.classList.add('hov')}
+ const c=cursorAt(T);cur.style.transform=`translate(${c.x-6}px,${c.y-3}px)`;
+ let ct=-9;for(const e of script.E)if(e.t<=T&&e.fn.toString().includes('clickT'))ct=Math.max(ct,e.t);
+ const age=T-S.clickT;if(age>=0&&age<.5){ring.style.opacity=1-age/.5;ring.style.transform=`translate(${c.x-20}px,${c.y-20}px) scale(${.5+age*1.6})`}else ring.style.opacity=0;
+ let cp=script.C[0];for(const x of script.C)if(x.t<=T)cp=x;capEl.innerHTML=`<b>${cp.h}</b> &nbsp;·&nbsp; ${cp.s}`;
+ document.getElementById('seek').value=T/script.dur*1000;document.getElementById('tm').textContent=T.toFixed(1)+' / '+script.dur.toFixed(0)+'s'}
+function fit(){const render=document.body.classList.contains('render');const avail=Math.min(window.innerWidth-40,1200);const s=render?1:Math.min(1,avail/1200);
+ scaler.style.transform=`scale(${s})`;const fr=document.getElementById('frame');fr.style.width=1200*s+'px';fr.style.height=780*s+'px';return s}
+function setFlow(f){flow=f;script=SCRIPTS[f];document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.f===f));const s=fit();measure();scaler.style.transform=`scale(${s})`;T=0;renderAt(0)}
+/* playback */
+let playing=true,last=0,auto=true;
+function tick(ts){if(!last)last=ts;const dt=(ts-last)/1000;last=ts;if(playing){let t=T+dt;if(t>=script.dur){if(flow==='A'&&auto){setFlow('B');}else{t=script.dur;playing=false;document.getElementById('pp').textContent='Replay'}renderAt(t)}else renderAt(t)}requestAnimationFrame(tick)}
+document.getElementById('pp').onclick=()=>{if(T>=script.dur-.01)T=0;playing=!playing;document.getElementById('pp').textContent=playing?'Pause':'Play'};
+document.getElementById('rs').onclick=()=>{T=0;playing=true;document.getElementById('pp').textContent='Pause';renderAt(0)};
+document.getElementById('seek').oninput=e=>{playing=false;document.getElementById('pp').textContent='Play';renderAt(e.target.value/1000*script.dur)};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{auto=false;setFlow(b.dataset.f);playing=true;document.getElementById('pp').textContent='Pause'});
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();document.getElementById('pp').click()}});
+window.addEventListener('resize',()=>{const s=fit()});
+const q=new URLSearchParams(location.search);if(q.has('render'))document.body.classList.add('render');
+function boot(){setFlow(q.get('flow')||'A');window.__ready=true;if(q.has('render')){playing=false;auto=false}else requestAnimationFrame(tick)}
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(boot);
+window.__render=renderAt;window.__flow=setFlow;window.__dur=()=>script.dur;
+</script>
+</body></html>
